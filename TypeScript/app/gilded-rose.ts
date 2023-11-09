@@ -1,3 +1,16 @@
+/* 
+Eerst leesbaarheid verbeteren
+- For loop omzetten naar foreach. Hierdoor kan er gebruik gemaakt worden van item ipv this.items[i]
+- Maak losse functies van alle acties zoals het omhoog/omlaag zetten van de quality of updaten van de items. Hierdoor is er meer overzicht en minder code nodig om dezelfde functionaliteit te draaien.
+- Wanneer de naam 'Sulfuras, Hand of Ragnaros' is, hoeft er niks te gebeuren. dus een "return" word dan toegepast.
+- Draai een aantal if statements zoals "if item.name != 'Aged Brie else" om naar "if item.name == 'Aged Brie else". Dit leest gemakkelijker en zorgt voor minder nesting
+- quality = quality - quality gewoon quality = 0 van gemaakt.
+- De if statement van 'Backstage passes to a TAFKAL80ETC concert' net anders gebouwd zodat increaseQuality() niet meerdere keer hoeft gedraait te worden maar i.p.v een juiste waarde meegeeft. 
+
+Toevoegen van 'Conjured Mana Cake'
+- if check of naam gelijk staat aan 'Conjured Mana Cake', zo ja geef waard 2 mee i.p.v 1
+*/
+
 export class Item {
   name: string;
   sellIn: number;
@@ -10,6 +23,21 @@ export class Item {
   }
 }
 
+function increaseQuality(item, value) {
+  item.quality = Math.min(item.quality + value, 50);
+}
+
+
+function decreaseQuality(item, value) {
+  if (item.quality > 0) {
+      item.quality -= value;
+  }
+}
+
+function descreaseSellIn(item) {
+  item.sellIn = item.sellIn - 1
+}
+
 export class GildedRose {
   items: Array<Item>;
 
@@ -18,51 +46,39 @@ export class GildedRose {
   }
 
   updateQuality() {
-    for (let i = 0; i < this.items.length; i++) {
-      if (this.items[i].name != 'Aged Brie' && this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-        if (this.items[i].quality > 0) {
-          if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-            this.items[i].quality = this.items[i].quality - 1
-          }
-        }
-      } else {
-        if (this.items[i].quality < 50) {
-          this.items[i].quality = this.items[i].quality + 1
-          if (this.items[i].name == 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].sellIn < 11) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-            if (this.items[i].sellIn < 6) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-          }
-        }
+    this.items.forEach((item) => {
+      if (item.name == 'Sulfuras, Hand of Ragnaros') {
+        return;
       }
-      if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-        this.items[i].sellIn = this.items[i].sellIn - 1;
-      }
-      if (this.items[i].sellIn < 0) {
-        if (this.items[i].name != 'Aged Brie') {
-          if (this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].quality > 0) {
-              if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-                this.items[i].quality = this.items[i].quality - 1
-              }
-            }
-          } else {
-            this.items[i].quality = this.items[i].quality - this.items[i].quality
-          }
+      
+      if (item.name == 'Aged Brie') {
+        increaseQuality(item, 1);
+      } else if (item.name == 'Backstage passes to a TAFKAL80ETC concert'){
+        if (item.sellIn < 6) {
+          increaseQuality(item, 3);
+        } else if (item.sellIn < 11) {
+          increaseQuality(item, 2);
         } else {
-          if (this.items[i].quality < 50) {
-            this.items[i].quality = this.items[i].quality + 1
-          }
+          increaseQuality(item, 1);
+        }
+      } else if (item.name === 'Conjured Mana Cake'){
+        decreaseQuality(item, 2);
+      } else {
+        decreaseQuality(item, 1);
+      }
+      
+      descreaseSellIn(item);
+
+      if (item.sellIn < 0) {
+        if (item.name == 'Aged Brie') {
+          increaseQuality(item, 1);
+        } else if (item.name == 'Backstage passes to a TAFKAL80ETC concert') {
+          item.quality = 0;
+        } else {
+          decreaseQuality(item, 1);
         }
       }
-    }
+    });
 
     return this.items;
   }
